@@ -11,16 +11,18 @@
 3. ActivityCompat.requestPermissions
 请求授权
 4. onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-回调获取授权结果，判断是否授权
+回调获取授权结果，判断是否授权。
 
 
-##RxPermissions：
+
+## RxPermissions：
+
 ### 1.原理说明：
 RxPermissions会在请求的Activity或者Fragment里添加一个无视图的Fragment-RxPermissionsFragment来申请权限、接收结果。
 
 ### 2.基础上做的改动：
 #### 改动1：
-去掉了oneof、pending的处理，这俩方法貌似没用，而且在申请权限屏幕切换过程中会导致数据混乱，会导致两个trigger，然后回调两次。
+去掉了oneof、pending方法的处理，这俩方法貌似没用，而且在申请权限屏幕切换过程中会导致数据混乱，会导致两个trigger，然后发送数据两次。
 ![源代码](https://upload-images.jianshu.io/upload_images/2288693-121963a7d6853e5b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 改动后如下：
 ![改动后](https://upload-images.jianshu.io/upload_images/2288693-fc41ab467c7c866b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
@@ -69,22 +71,24 @@ rxPermissions.requestCombined(Manifest.permission.READ_PHONE_STATE, Manifest.per
 });
 
 ```
+
+**请求权限的可能的几种结果：**
 ![请求权限的结果](https://upload-images.jianshu.io/upload_images/2288693-76e2fcc62f3fafff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 ## 典型流程：
-###1.闪屏界面申请多个权限，不管用户怎么选择，都要进入主界面（参考竞品）。
+### 1.闪屏界面申请多个权限，不管用户怎么选择，都要进入主界面（参考竞品）。
 ![闪屏界面流程](https://upload-images.jianshu.io/upload_images/2288693-b16ca9801c098462.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-###2.用户修改照片界面，这里必须开启权限，没权限结束界面，获取成功则初始化。
+### 2.用户修改照片界面，这里必须开启权限，没权限结束界面，获取成功则初始化。
 ![修改照片流程](https://upload-images.jianshu.io/upload_images/2288693-d6074d0833807c5e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-###3.其他请根据业务需求处理。
+### 3.其他请根据业务需求处理。
 
 ## 备注：
-1.关于WRITE_EXTERNAL_STORAGE，使用getExternalCacheDir()获取外置缓存添加读写写文件不需要这个权限，但通过Environment.getExternalStorageDirectory()获取存储卡目录然后操作文件就需要权限。
+1.关于WRITE_EXTERNAL_STORAGE，**使用getExternalCacheDir()获取外置缓存添加读写写文件不需要这个权限**，但通过Environment.getExternalStorageDirectory()获取存储卡目录然后操作文件就需要权限。
 getExternalCacheDir()目录为sd卡/Androdi/data/包名/cache下。
 
-2.权限申请最好在onCreate生命周期里申请，这样Activity旋转重建不影响结果，假如点击按钮后申请权限，假如此Activity旋转重建了，权限申请的弹窗系统会自动处理，但是申请权限结果新界面是收不到的。
+2.**权限申请最好在onCreate生命周期里申请**，这样Activity旋转重建不影响结果，假如点击按钮后申请权限，假如此Activity旋转重建了，权限申请的弹窗系统会自动处理，但是申请权限结果新界面是收不到的。
 
-3.动态申请的权限必须先在manifest里配置，不然不会弹该权限的窗口，结果永远返回false，切在应用权限设置里也看不到该权限。
+3.**动态申请的权限必须先在manifest里配置**，不然不会弹该权限的窗口，结果永远返回false，切在应用权限设置里也看不到该权限。
 
 
 
